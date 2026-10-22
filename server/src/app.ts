@@ -7,51 +7,60 @@ import cookieParser from 'cookie-parser';
 
 import { env, isDevelopment } from './config/env';
 import apiV1Router from './routes/index';
+import authRouter from './modules/auth/auth.routes';
+import healthRouter from './routes/v1/health.route';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 
 // ─── Trusted Origins ──────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS: string[] = [
+  'https://sbkt-loom-eff.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://192.168.1.102:5173',
-  env.CLIENT_URL,
 ];
 
-// Deduplicate (CLIENT_URL may already match one of the above)
-const uniqueOrigins = [...new Set(ALLOWED_ORIGINS)];
+if (env.CLIENT_URL) {
+  const normalized = env.CLIENT_URL.replace(/\/+$/, '');
+  if (!ALLOWED_ORIGINS.includes(normalized)) {
+    ALLOWED_ORIGINS.push(normalized);
+  }
+}
 
 // ─── Build the Express App ────────────────────────────────────────────────────
 export const createApp = (): Application => {
   const app = express();
+
+  // ── CORS (must be registered FIRST before all routes and handlers) ───────────
+  const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+      // Allow requests with no Origin (same-origin, Postman, curl, server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+      const normalizedOrigin = origin.replace(/\/+$/, '');
+      if (
+        ALLOWED_ORIGINS.includes(normalizedOrigin) ||
+        /^https:\/\/sbkt-loom-eff[a-z0-9-]*\.vercel\.app$/.test(normalizedOrigin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error('Origin not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
+  };
+
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // ── Security headers ───────────────────────────────────────────────────────
   app.use(helmet());
 
   // ── Cookie parser (required for HttpOnly JWT cookie auth) ─────────────────
   app.use(cookieParser(env.COOKIE_SECRET));
-
-  // ── CORS ───────────────────────────────────────────────────────────────────
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        // Allow requests with no Origin (same-origin, Postman, curl in dev)
-        if (!origin) {
-          return callback(null, true);
-        }
-        if (uniqueOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-        // Reject with null (cors will omit the ACAO header).
-        // We return null rather than an Error so Express does NOT generate a
-        // 500 and does NOT echo the disallowed origin back to the client.
-        return callback(null, false);
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-    }),
-  );
 
   // ── Request logging ─────────────────────────────────────────────────────────
   app.use(morgan(isDevelopment ? 'dev' : 'combined'));
@@ -76,6 +85,9 @@ export const createApp = (): Application => {
 
   // ── API routes ─────────────────────────────────────────────────────────────
   app.use('/api/v1', apiV1Router);
+  app.use('/api', apiV1Router);
+  app.use('/auth', authRouter);
+  app.use('/health', healthRouter);
 
   // ── 404 — must come AFTER all routes ──────────────────────────────────────
   app.use(notFoundHandler);
