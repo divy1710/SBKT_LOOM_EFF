@@ -44,7 +44,7 @@ if (!_parsed.success) {
   process.exit(1);
 }
 
-export const env = _parsed.data;
+export const env = _parsed.data!;
 
 // ─── Runtime guard: bootstrap secret required when bootstrap is enabled ───────
 if (env.BOOTSTRAP_ENABLED && !env.BOOTSTRAP_SECRET) {
