@@ -11,7 +11,9 @@ import {
   getMachineEfficiencyTrend,
   getMachineEfficiencyDetails,
   getEfficiencyRanking,
+  getCrossFactoryAnalytics,
 } from './analytics.controller';
+import { requirePermission } from '../auth/permissions';
 import {
   baseAnalyticsQuerySchema,
   machineAnalyticsQuerySchema,
@@ -86,6 +88,13 @@ router.get(
   '/efficiency-ranking',
   validate(efficiencyRankingQuerySchema, 'query'),
   getEfficiencyRanking,
+);
+
+// ── 10. Cross-Factory Analytics (Super Admin only) ────────────────────────────
+router.get(
+  '/cross-factory',
+  requirePermission('analytics.cross_factory'),
+  getCrossFactoryAnalytics,
 );
 
 export default router;

@@ -10,6 +10,7 @@ import { MachineDetailPage } from '@/features/machine/pages/MachineDetailPage';
 import UnauthorizedPage from '@/pages/UnauthorizedPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
+import { UserRole } from '@/features/auth/types/auth.types';
 
 import { ProductionSheetPage } from '@/features/production/pages/ProductionSheetPage';
 import { ProductionAnalysisPage } from '@/features/analytics/pages/ProductionAnalysisPage';
@@ -18,6 +19,17 @@ import { FabricQualityAnalyticsPage } from '@/features/analytics/pages/FabricQua
 import { MachinePerformancePage } from '@/features/analytics/pages/MachinePerformancePage';
 import { EfficiencyAnalyticsPage } from '@/features/analytics/pages/EfficiencyAnalyticsPage';
 import SettingsPage from '@/features/settings/pages/SettingsPage';
+
+// Super Admin
+import { SuperAdminLayout } from '@/features/super-admin/pages/SuperAdminLayout';
+import { SuperAdminOverviewPage } from '@/features/super-admin/pages/SuperAdminOverviewPage';
+import { FactoryManagementPage } from '@/features/super-admin/pages/FactoryManagementPage';
+import { FactoryAdminManagementPage } from '@/features/super-admin/pages/FactoryAdminManagementPage';
+import { SuperAdminUsersPage } from '@/features/super-admin/pages/SuperAdminUsersPage';
+import { RolesPermissionsPage } from '@/features/super-admin/pages/RolesPermissionsPage';
+import { CrossFactoryAnalyticsPage } from '@/features/super-admin/pages/CrossFactoryAnalyticsPage';
+import { AuditLogsPage } from '@/features/super-admin/pages/AuditLogsPage';
+import { PlatformSettingsPage } from '@/features/super-admin/pages/PlatformSettingsPage';
 
 export const router = createBrowserRouter([
   // ── Public ────────────────────────────────────────────────────────────────
@@ -133,6 +145,26 @@ export const router = createBrowserRouter([
         <SettingsPage />
       </ProtectedRoute>
     ),
+  },
+
+  // ── Super Admin Portal (Platform-Wide) ────────────────────────────────────
+  {
+    path: '/super-admin',
+    element: (
+      <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+        <SuperAdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <SuperAdminOverviewPage /> },
+      { path: 'factories', element: <FactoryManagementPage /> },
+      { path: 'admins', element: <FactoryAdminManagementPage /> },
+      { path: 'users', element: <SuperAdminUsersPage /> },
+      { path: 'roles', element: <RolesPermissionsPage /> },
+      { path: 'analytics', element: <CrossFactoryAnalyticsPage /> },
+      { path: 'audit-logs', element: <AuditLogsPage /> },
+      { path: 'settings', element: <PlatformSettingsPage /> },
+    ],
   },
 
   // ── Fallback ──────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import { User, UserRole, toSafeUser, outranks, USER_MANAGEMENT_ROLES } from '../user/user.model';
 import { ApiResponse } from '../../utils/ApiResponse';
 import { ApiError } from '../../utils/ApiError';
+import { auditService } from '../audit/audit.service';
 import {
   createUserSchema,
   updateUserSchema,
@@ -31,6 +32,10 @@ export const listUsers = async (
     // Factory admins can only see their own factory's users
     if (actor.role === UserRole.FACTORY_ADMIN) {
       filter['factoryId'] = actor.factoryId;
+    } else if (actor.role === UserRole.SUPER_ADMIN && req.query.factoryId) {
+      if (Types.ObjectId.isValid(req.query.factoryId as string)) {
+        filter['factoryId'] = new Types.ObjectId(req.query.factoryId as string);
+      }
     }
 
     if (search) {
@@ -117,9 +122,12 @@ export const createUser = async (
       }
     }
 
-    // FACTORY_ADMIN cannot create SUPER_ADMIN
-    if (actor.role === UserRole.FACTORY_ADMIN && targetRole === UserRole.SUPER_ADMIN) {
-      return next(new ApiError(403, 'Cannot create SUPER_ADMIN accounts'));
+    // FACTORY_ADMIN cannot create SUPER_ADMIN or FACTORY_ADMIN
+    if (
+      actor.role === UserRole.FACTORY_ADMIN &&
+      (targetRole === UserRole.SUPER_ADMIN || targetRole === UserRole.FACTORY_ADMIN)
+    ) {
+      return next(new ApiError(403, 'Factory Admin cannot create administrative roles'));
     }
 
     // Determine factory
@@ -133,8 +141,27 @@ export const createUser = async (
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const user = await User.create({
-      name, email, passwordHash, role: targetRole,
-      factoryId: resolvedFactoryId, isActive: true,
+      name,
+      email,
+      passwordHash,
+      role: targetRole,
+      factoryId: resolvedFactoryId,
+      isActive: true,
+    });
+
+    await auditService.logEvent({
+      actor: {
+        _id: actor._id,
+        name: actor.name,
+        email: actor.email,
+        role: actor.role,
+      },
+      action: 'USER_CREATED',
+      resourceType: 'USER',
+      resourceId: user._id.toString(),
+      factoryId: resolvedFactoryId,
+      details: { name: user.name, email: user.email, role: user.role },
+      ipAddress: req.ip,
     });
 
     res.status(201).json(new ApiResponse('User created', { user: toSafeUser(user) }).toJSON());
@@ -177,6 +204,11 @@ export const updateUser = async (
 
     const { name, email, factoryId } = parsed.data;
 
+    // Factory re-assignment can only be performed by SUPER_ADMIN
+    if (factoryId !== undefined && actor.role !== UserRole.SUPER_ADMIN) {
+      return next(new ApiError(403, 'Only Super Admin can reassign user factories'));
+    }
+
     if (email && email !== target.email) {
       const taken = await User.findOne({ email }).exec();
       if (taken) return next(new ApiError(409, 'Email already in use'));
@@ -187,6 +219,21 @@ export const updateUser = async (
       { ...(name && { name }), ...(email && { email }), ...(factoryId !== undefined && { factoryId }) },
       { new: true, runValidators: true },
     ).exec();
+
+    await auditService.logEvent({
+      actor: {
+        _id: actor._id,
+        name: actor.name,
+        email: actor.email,
+        role: actor.role,
+      },
+      action: 'USER_UPDATED',
+      resourceType: 'USER',
+      resourceId: target._id.toString(),
+      factoryId: updated?.factoryId?.toString() ?? target.factoryId?.toString(),
+      details: { updatedFields: Object.keys(parsed.data) },
+      ipAddress: req.ip,
+    });
 
     res.status(200).json(new ApiResponse('User updated', { user: toSafeUser(updated!) }).toJSON());
   } catch (err) {
@@ -243,6 +290,21 @@ export const changeUserStatus = async (
       { new: true },
     ).exec();
 
+    await auditService.logEvent({
+      actor: {
+        _id: actor._id,
+        name: actor.name,
+        email: actor.email,
+        role: actor.role,
+      },
+      action: 'USER_STATUS_CHANGED',
+      resourceType: 'USER',
+      resourceId: target._id.toString(),
+      factoryId: target.factoryId?.toString(),
+      details: { isActive: parsed.data.isActive },
+      ipAddress: req.ip,
+    });
+
     res.status(200).json(
       new ApiResponse(
         `User ${parsed.data.isActive ? 'activated' : 'deactivated'}`,
@@ -253,3 +315,4 @@ export const changeUserStatus = async (
     next(err);
   }
 };
+

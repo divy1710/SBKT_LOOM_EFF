@@ -9,18 +9,29 @@ export interface IProductionPreferences {
   lowBeamMeterAlertThreshold: number;
 }
 
+export type FactoryStatus = 'ACTIVE' | 'INACTIVE';
+
 // ─── Interface ────────────────────────────────────────────────────────────────
 export interface IFactory extends Document {
   _id: Types.ObjectId;
   name: string;
   code: string;
+  factoryName?: string;
+  factoryCode?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
   phone?: string;
+  contactNumber?: string;
   email?: string;
+  contactEmail?: string;
   logo?: string;
   timezone: string;
   productionPreferences?: IProductionPreferences;
+  status: FactoryStatus;
   isActive: boolean;
+  createdBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +55,9 @@ const factorySchema = new Schema<IFactory>(
       match: [/^[A-Z0-9_-]{2,20}$/, 'Code must be 2-20 uppercase letters, numbers, hyphens, or underscores'],
     },
     address: { type: String, trim: true },
+    city: { type: String, trim: true, default: '' },
+    state: { type: String, trim: true, default: '' },
+    country: { type: String, trim: true, default: 'India' },
     phone: { type: String, trim: true },
     email: {
       type: String,
@@ -65,21 +79,57 @@ const factorySchema = new Schema<IFactory>(
       defaultEfficiencyMode: { type: String, enum: ['AUTO', 'CUSTOM'], default: 'AUTO' },
       lowBeamMeterAlertThreshold: { type: Number, default: 200, min: 0 },
     },
+    status: {
+      type: String,
+      enum: ['ACTIVE', 'INACTIVE'],
+      default: 'ACTIVE',
+    },
     isActive: {
       type: Boolean,
       default: true,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: undefined,
     },
   },
   {
     timestamps: true,
     toJSON: {
+      virtuals: true,
       transform: (_doc, ret) => {
         (ret as Record<string, unknown>)['__v'] = undefined;
+        // Provide friendly field aliases
+        ret.factoryName = ret.name;
+        ret.factoryCode = ret.code;
+        ret.contactNumber = ret.phone;
+        ret.contactEmail = ret.email;
+        return ret;
+      },
+    },
+    toObject: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        ret.factoryName = ret.name;
+        ret.factoryCode = ret.code;
+        ret.contactNumber = ret.phone;
+        ret.contactEmail = ret.email;
         return ret;
       },
     },
   },
 );
+
+// Middleware to keep status and isActive synchronized
+factorySchema.pre('save', function (next) {
+  if (this.isModified('status')) {
+    this.isActive = this.status === 'ACTIVE';
+  } else if (this.isModified('isActive')) {
+    this.status = this.isActive ? 'ACTIVE' : 'INACTIVE';
+  }
+  next();
+});
 
 // ─── Additional indexes ───────────────────────────────────────────────────────
 // Note: code index is already created by { unique: true } on the field itself.

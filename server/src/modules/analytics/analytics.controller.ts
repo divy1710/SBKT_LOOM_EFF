@@ -162,3 +162,17 @@ export const getEfficiencyRanking = async (
     next(err);
   }
 };
+
+export const getCrossFactoryAnalytics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    if (!req.user) return next(new ApiError(401, 'Authentication required'));
+    const data = await AnalyticsService.getCrossFactoryAnalytics();
+    res.status(200).json(new ApiResponse('Cross-factory analytics retrieved', data));
+  } catch (err) {
+    next(err);
+  }
+};

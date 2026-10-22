@@ -12,10 +12,12 @@ import {
   Loader2,
   Disc,
   Settings,
+  Building2,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { ROLE_LABELS } from '@/features/auth/types/auth.types';
+import { ROLE_LABELS, UserRole } from '@/features/auth/types/auth.types';
 import { useState } from 'react';
 
 const UPCOMING_MODULES: Array<{ icon: any; title: string; desc: string; color: string }> = [];
@@ -195,9 +197,26 @@ export default function AuthenticatedHomePage() {
             >
               <Settings size={14} /> Settings
             </button>
+            {user.role === UserRole.SUPER_ADMIN && (
+              <button
+                onClick={() => navigate('/super-admin')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20 transition ml-2"
+              >
+                <Sparkles size={14} /> Super Admin Panel
+              </button>
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-2">
+          {user.role === UserRole.SUPER_ADMIN && (
+            <button
+              onClick={() => navigate('/super-admin')}
+              className="sm:hidden flex items-center justify-center w-9 h-9 rounded-xl text-indigo-300 hover:text-white bg-indigo-950/60 border border-indigo-500/40 transition"
+              title="Super Admin Panel"
+            >
+              <Sparkles size={16} />
+            </button>
+          )}
           <button
             onClick={() => navigate('/settings')}
             className="sm:hidden flex items-center justify-center w-9 h-9 rounded-xl text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700/60 transition"
@@ -261,11 +280,35 @@ export default function AuthenticatedHomePage() {
               </div>
               <p className="text-sm text-slate-400">
                 You are signed in to the SBKT Loom Production &amp; Efficiency Management System.
-                Phase 6 — Machine Management — is now active.
+                Phase 11 — Super Admin Panel &amp; Multi-Factory Management — is active.
               </p>
             </div>
           </div>
         </div>
+
+        {/* Super Admin Card for SUPER_ADMIN role */}
+        {user.role === UserRole.SUPER_ADMIN && (
+          <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-purple-950/50 to-slate-950/80 border border-indigo-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-600/40 shrink-0">
+                <Building2 size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Super Admin Control Center</h2>
+                <p className="text-xs text-indigo-300 mt-0.5">
+                  Manage factories, provision factory admins, inspect audit logs, and monitor cross-factory analytics.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/super-admin')}
+              className="inline-flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all self-start sm:self-auto shrink-0"
+            >
+              <span>Open Super Admin Portal</span>
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
 
         {/* Active Modules */}
         <p className="text-xs font-semibold tracking-widest uppercase text-slate-500 mb-4">

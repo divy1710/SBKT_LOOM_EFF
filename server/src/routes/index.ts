@@ -10,6 +10,8 @@ import productionRouter from '../modules/production/production.routes';
 import analyticsRouter from '../modules/analytics/analytics.routes';
 import settingsRouter from '../modules/settings/settings.routes';
 import backupRouter from '../modules/backup/backup.routes';
+import factoryRouter from '../modules/factory/factory.routes';
+import auditRouter from '../modules/audit/audit.routes';
 
 const apiV1Router = Router();
 
@@ -26,5 +28,7 @@ apiV1Router.use('/analytics', analyticsRouter);
 apiV1Router.use('/settings', settingsRouter);
 apiV1Router.use('/backup', backupRouter);
 apiV1Router.use('/settings/backup', backupRouter);
+apiV1Router.use('/factories', factoryRouter);
+apiV1Router.use('/audit-logs', auditRouter);
 
 export default apiV1Router;

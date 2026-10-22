@@ -1,6 +1,7 @@
 import { Types, PipelineStage } from 'mongoose';
 import { ApiError } from '../../utils/ApiError';
-import { IUser, UserRole } from '../user/user.model';
+import { User, IUser, UserRole } from '../user/user.model';
+import { Factory } from '../factory/factory.model';
 import { Machine } from '../machine/machine.model';
 import { ProductionSheet, ShiftType } from '../production/production.model';
 import { normalizeProductionDate } from '../production/production.utils';
@@ -973,6 +974,102 @@ export class AnalyticsService {
       missingDataMachines,
       minEfficiencyThreshold: minThreshold,
       belowThreshold,
+    };
+  }
+
+  /**
+   * Phase 11: Cross-Factory Analytics for Super Admin overview
+   */
+  public static async getCrossFactoryAnalytics(): Promise<{
+    factories: Array<{
+      id: string;
+      name: string;
+      code: string;
+      totalMeters: number;
+      machineCount: number;
+      userCount: number;
+      averageEfficiency: number;
+      completedSheetsCount: number;
+    }>;
+    totals: {
+      totalPlatformMeters: number;
+      totalPlatformMachines: number;
+      totalPlatformUsers: number;
+      overallPlatformEfficiency: number;
+      totalActiveFactories: number;
+    };
+  }> {
+    const activeFactories = await Factory.find({
+      status: { $ne: 'INACTIVE' },
+      isActive: { $ne: false },
+    })
+      .sort({ name: 1 })
+      .lean();
+
+    let totalPlatformMeters = 0;
+    let totalPlatformMachines = 0;
+    let totalPlatformUsers = 0;
+    let efficiencySum = 0;
+    let factoriesWithEffCount = 0;
+
+    const factoryStats = await Promise.all(
+      activeFactories.map(async (f) => {
+        const factoryId = f._id;
+
+        // Sum production meters
+        const meterAgg = await ProductionSheet.aggregate([
+          { $match: { factoryId } },
+          { $group: { _id: null, totalMeters: { $sum: '$totalProductionMeters' } } },
+        ]);
+        const totalMeters = meterAgg[0]?.totalMeters || 0;
+
+        // Count active machines
+        const machineCount = await Machine.countDocuments({ factoryId, isActive: true });
+
+        // Count active users
+        const userCount = await User.countDocuments({ factoryId, isActive: true });
+
+        // Average efficiency from completed sheets
+        const effAgg = await ProductionSheet.aggregate([
+          { $match: { factoryId, averageEfficiency: { $ne: null } } },
+          { $group: { _id: null, avgEff: { $avg: '$averageEfficiency' }, count: { $sum: 1 } } },
+        ]);
+        const averageEfficiency = effAgg[0]?.avgEff ? Math.round(effAgg[0].avgEff * 10) / 10 : 0;
+        const completedSheetsCount = effAgg[0]?.count || 0;
+
+        totalPlatformMeters += totalMeters;
+        totalPlatformMachines += machineCount;
+        totalPlatformUsers += userCount;
+        if (averageEfficiency > 0) {
+          efficiencySum += averageEfficiency;
+          factoriesWithEffCount++;
+        }
+
+        return {
+          id: f._id.toString(),
+          name: f.name,
+          code: f.code,
+          totalMeters,
+          machineCount,
+          userCount,
+          averageEfficiency,
+          completedSheetsCount,
+        };
+      }),
+    );
+
+    const overallPlatformEfficiency =
+      factoriesWithEffCount > 0 ? Math.round((efficiencySum / factoriesWithEffCount) * 10) / 10 : 0;
+
+    return {
+      factories: factoryStats,
+      totals: {
+        totalPlatformMeters,
+        totalPlatformMachines,
+        totalPlatformUsers,
+        overallPlatformEfficiency,
+        totalActiveFactories: activeFactories.length,
+      },
     };
   }
 }

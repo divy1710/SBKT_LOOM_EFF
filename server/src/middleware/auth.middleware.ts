@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/ApiError';
 import { verifyAccessToken, COOKIE_NAME, JwtPayload } from '../utils/jwt';
 import { User, IUser, UserRole } from '../modules/user/user.model';
+import { Factory } from '../modules/factory/factory.model';
 
 // ─── Extend Express Request ────────────────────────────────────────────────────
 declare global {
@@ -55,6 +56,18 @@ export const authenticate = async (
 
     if (!user.isActive) {
       return next(new ApiError(401, 'Account is deactivated'));
+    }
+
+    // Phase 11: Enforce factory active status for non-Super Admin users
+    if (user.role !== UserRole.SUPER_ADMIN && user.factoryId) {
+      const factory = await Factory.findById(user.factoryId).select('isActive status name').lean();
+      if (!factory || factory.isActive === false || factory.status === 'INACTIVE') {
+        return next(
+          ApiError.forbidden(
+            'Your factory has been deactivated. Please contact the platform administrator.',
+          ),
+        );
+      }
     }
 
     req.user = user;
