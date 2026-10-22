@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Activity,
   Database,
@@ -12,9 +13,12 @@ import {
   Workflow,
   Server,
   RefreshCw,
+  LogIn,
+  ArrowRight,
 } from 'lucide-react';
 import apiClient from '@/lib/axios';
 import { timeAgo } from '@/lib/utils';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HealthData {
@@ -111,6 +115,7 @@ function StatusBadge({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function WelcomePage() {
+  const { isAuthenticated } = useAuth();
   const [apiStatus, setApiStatus] = useState<Status>('idle');
   const [dbStatus, setDbStatus] = useState<Status>('idle');
   const [apiTimestamp, setApiTimestamp] = useState<string | null>(null);
@@ -205,8 +210,58 @@ export default function WelcomePage() {
         />
       </div>
 
+      {/* ── Top Navigation Bar ────────────────────────────────────────────── */}
+      <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20"
+            style={{
+              background: 'linear-gradient(135deg, #1d4ed8 0%, #06b6d4 100%)',
+            }}
+          >
+            <Factory size={22} className="text-white" />
+          </div>
+          <div>
+            <span className="font-bold text-slate-100 tracking-tight text-base sm:text-lg">
+              SBKT Textile Manager
+            </span>
+            <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-900/40 text-blue-300 border border-blue-700/50">
+              Loom System
+            </span>
+          </div>
+        </div>
+
+        <div>
+          {isAuthenticated ? (
+            <Link
+              to="/home"
+              id="btn-nav-dashboard"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-blue-500/20"
+              style={{
+                background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+              }}
+            >
+              <span>Dashboard</span>
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              id="btn-nav-login"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/25"
+              style={{
+                background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+              }}
+            >
+              <LogIn size={16} />
+              <span>Login</span>
+            </Link>
+          )}
+        </div>
+      </header>
+
       {/* ── Main content ────────────────────────────────────────────────────── */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
 
         {/* Hero section */}
         <div className="text-center max-w-4xl mx-auto mb-16 animate-fade-in">
@@ -262,6 +317,35 @@ export default function WelcomePage() {
             machine efficiency, fabric quality, yarn inventory, and factory
             analytics — built for precision manufacturing.
           </p>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-8 animate-fade-in animation-delay-400">
+            {isAuthenticated ? (
+              <Link
+                to="/home"
+                id="btn-hero-dashboard"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-sm text-white shadow-xl shadow-blue-500/30 transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                }}
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight size={18} />
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                id="btn-hero-login"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-sm text-white shadow-xl shadow-blue-500/30 transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                }}
+              >
+                <LogIn size={18} />
+                <span>Login to System</span>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* System Health Panel */}
