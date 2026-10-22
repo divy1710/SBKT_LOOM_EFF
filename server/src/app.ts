@@ -14,6 +14,7 @@ import { notFoundHandler } from './middleware/notFoundHandler';
 const ALLOWED_ORIGINS: string[] = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://192.168.1.102:5173',
   env.CLIENT_URL,
 ];
 
