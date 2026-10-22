@@ -43,7 +43,7 @@
     "tabLanguage": "Language",
     "tabProduction": "Production Preferences",
     "tabAccount": "Account Settings",
-    "tabSystem": "System Information",
+    "tabBackup": "Backup & Restore",
     "unsavedWarning": "You have unsaved changes. Leaving will discard your edits."
   },
   "factory": {
@@ -128,5 +128,10 @@
     "uptime": "Server Uptime",
     "serverTime": "Server Timestamp",
     "modulesActive": "Active System Modules"
+  },
+  "backup": {
+    "tab": "Backup & Restore",
+    "title": "Company Backup & Export",
+    "description": "Create and restore full company data archives safely."
   }
 }

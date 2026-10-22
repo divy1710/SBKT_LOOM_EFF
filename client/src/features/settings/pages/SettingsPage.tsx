@@ -17,6 +17,7 @@ import {
   Cpu,
   CheckCircle2,
   Info,
+  DatabaseBackup,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -28,8 +29,9 @@ import {
   type FactoryProfile,
   type ProductionPreferences,
 } from '../services/settings.service';
+import { BackupRestoreSection } from '../components/BackupRestoreSection';
 
-type SettingsTab = 'factory' | 'appearance' | 'language' | 'production' | 'account';
+type SettingsTab = 'factory' | 'appearance' | 'language' | 'production' | 'account' | 'backup';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -413,6 +415,21 @@ export default function SettingsPage() {
             <Shield size={16} />
             <span>{t('settings.tabAccount')}</span>
           </button>
+
+          {isAdmin && (
+            <button
+              id="tab-backup"
+              onClick={() => setActiveTab('backup')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 ${
+                activeTab === 'backup'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              <DatabaseBackup size={16} />
+              <span>{t('backup.tab') || 'Backup & Restore'}</span>
+            </button>
+          )}
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════════ */}
@@ -1139,6 +1156,11 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+
+        {/* ══════════════════════════════════════════════════════════════════════ */}
+        {/* TAB 6: BACKUP & RESTORE                                              */}
+        {/* ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'backup' && isAdmin && <BackupRestoreSection />}
 
       </main>
 
