@@ -16,6 +16,7 @@ export interface MachinePerformancePdfOptions {
   endDate: string;
   shift: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
 }
 
@@ -27,6 +28,7 @@ export function exportMachinePerformancePdf({
   endDate,
   shift,
   factoryName,
+  factoryLogo,
   factoryTimezone,
 }: MachinePerformancePdfOptions): void {
   const extraFilters = [
@@ -37,6 +39,7 @@ export function exportMachinePerformancePdf({
   const { doc, pageWidth, pageHeight, startContentY } = createBasePdfReport({
     title: 'Machine Production Performance Report',
     factoryName,
+    factoryLogo,
     factoryTimezone,
     startDate,
     endDate,

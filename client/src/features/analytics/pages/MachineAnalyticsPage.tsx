@@ -117,6 +117,7 @@ export const MachineAnalyticsPage: React.FC = () => {
         endDate,
         shift,
         factoryName: user?.factoryName,
+        factoryLogo: user?.factoryLogo,
         factoryTimezone: user?.factoryTimezone,
       });
       toast.success(`Machine ${data.currentConfig.machineNumber} PDF report generated successfully`);

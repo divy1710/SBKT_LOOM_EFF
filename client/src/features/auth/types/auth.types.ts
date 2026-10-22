@@ -24,6 +24,7 @@ export interface AuthUser {
   factoryId?: string;
   factoryName?: string;
   factoryTimezone?: string;
+  factoryLogo?: string;
   isActive: boolean;
   lastLoginAt?: string;
   createdAt: string;

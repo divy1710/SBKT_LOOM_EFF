@@ -11,6 +11,7 @@ import {
   Workflow,
   Loader2,
   Disc,
+  Settings,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -98,6 +99,19 @@ const ACTIVE_MODULES = [
     textColor: 'text-indigo-400 hover:text-indigo-300',
     linkColor: 'text-indigo-400',
   },
+  {
+    path: '/settings',
+    title: 'Settings & System Configuration',
+    desc: 'Factory profile, shift durations, appearance themes, Gujarati/Hindi language, and account security.',
+    gradient: 'from-slate-900/40 via-blue-900/20 to-slate-900/40',
+    hoverGradient: 'hover:from-slate-800/50',
+    border: 'border-slate-700/50 hover:border-blue-500/60',
+    iconBg: 'from-slate-700 to-blue-600',
+    icon: Settings,
+    shadow: 'shadow-blue-500/20',
+    textColor: 'text-blue-400 hover:text-blue-300',
+    linkColor: 'text-blue-400',
+  },
 ];
 
 export default function AuthenticatedHomePage() {
@@ -146,7 +160,7 @@ export default function AuthenticatedHomePage() {
                 className="text-xs font-bold text-slate-100"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                SBKT
+                {user.factoryName || 'SBKT'}
               </p>
               <p className="text-[10px] text-slate-500 leading-none">Loom Management System</p>
             </div>
@@ -174,21 +188,37 @@ export default function AuthenticatedHomePage() {
             >
               <Disc size={14} /> Beam Master
             </button>
+            <button
+              id="nav-settings"
+              onClick={() => navigate('/settings')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition"
+            >
+              <Settings size={14} /> Settings
+            </button>
           </nav>
         </div>
-        <button
-          id="btn-logout"
-          onClick={() => void handleLogout()}
-          disabled={loggingOut}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-300 transition-all duration-200 disabled:opacity-50"
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          {loggingOut ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />}
-          Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/settings')}
+            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-xl text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700/60 transition"
+            title="Settings"
+          >
+            <Settings size={16} />
+          </button>
+          <button
+            id="btn-logout"
+            onClick={() => void handleLogout()}
+            disabled={loggingOut}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-300 transition-all duration-200 disabled:opacity-50"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            {loggingOut ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />}
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 max-w-5xl mx-auto w-full">

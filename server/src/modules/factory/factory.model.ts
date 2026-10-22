@@ -1,5 +1,14 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
+export interface IProductionPreferences {
+  dayShiftDurationHours: number;
+  nightShiftDurationHours: number;
+  dayShiftStartTime: string;
+  nightShiftStartTime: string;
+  defaultEfficiencyMode: 'AUTO' | 'CUSTOM';
+  lowBeamMeterAlertThreshold: number;
+}
+
 // ─── Interface ────────────────────────────────────────────────────────────────
 export interface IFactory extends Document {
   _id: Types.ObjectId;
@@ -10,6 +19,7 @@ export interface IFactory extends Document {
   email?: string;
   logo?: string;
   timezone: string;
+  productionPreferences?: IProductionPreferences;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +56,14 @@ const factorySchema = new Schema<IFactory>(
       type: String,
       required: true,
       default: 'Asia/Kolkata',
+    },
+    productionPreferences: {
+      dayShiftDurationHours: { type: Number, default: 11, min: 1, max: 24 },
+      nightShiftDurationHours: { type: Number, default: 13, min: 1, max: 24 },
+      dayShiftStartTime: { type: String, default: '08:00' },
+      nightShiftStartTime: { type: String, default: '19:00' },
+      defaultEfficiencyMode: { type: String, enum: ['AUTO', 'CUSTOM'], default: 'AUTO' },
+      lowBeamMeterAlertThreshold: { type: Number, default: 200, min: 0 },
     },
     isActive: {
       type: Boolean,

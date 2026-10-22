@@ -21,6 +21,7 @@ export interface ProductionAnalysisPdfOptions {
   endDate: string;
   shift: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
 }
 
@@ -32,11 +33,13 @@ export function exportProductionAnalysisPdf({
   endDate,
   shift,
   factoryName,
+  factoryLogo,
   factoryTimezone,
 }: ProductionAnalysisPdfOptions): void {
   const { doc, pageWidth, pageHeight, startContentY } = createBasePdfReport({
     title: 'Production Analysis Report',
     factoryName,
+    factoryLogo,
     factoryTimezone,
     startDate,
     endDate,

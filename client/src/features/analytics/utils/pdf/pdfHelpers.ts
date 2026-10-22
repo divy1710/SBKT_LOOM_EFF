@@ -4,6 +4,7 @@ import type { SmartInsight } from '../../types/analytics.types';
 export interface BaseReportOptions {
   title: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
   startDate: string;
   endDate: string;
@@ -16,6 +17,50 @@ export interface MetricCardItem {
   label: string;
   value: string;
   subtext?: string;
+}
+
+/**
+ * Draws the company logo emblem (or image data url) at specified (x, y) coordinates.
+ * Returns the width of the drawn logo in mm.
+ */
+export function drawCompanyLogo(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  size = 12,
+  logoDataUrl?: string | null,
+): number {
+  let drawnImage = false;
+  if (logoDataUrl && typeof logoDataUrl === 'string' && logoDataUrl.startsWith('data:image')) {
+    try {
+      const format =
+        logoDataUrl.includes('image/jpeg') || logoDataUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
+      doc.addImage(logoDataUrl, format, x, y, size, size);
+      drawnImage = true;
+    } catch {
+      drawnImage = false;
+    }
+  }
+
+  if (!drawnImage) {
+    // High-resolution vector emblem matching SBKT loom weave
+    doc.setFillColor(29, 78, 216); // #1d4ed8
+    doc.roundedRect(x, y, size, size, 2.5, 2.5, 'F');
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.55);
+
+    // Weave grid
+    const s = size;
+    // Horizontal weft lines
+    doc.line(x + s * 0.25, y + s * 0.38, x + s * 0.75, y + s * 0.38);
+    doc.line(x + s * 0.25, y + s * 0.50, x + s * 0.75, y + s * 0.50);
+    doc.line(x + s * 0.25, y + s * 0.62, x + s * 0.75, y + s * 0.62);
+    // Vertical warp lines
+    doc.line(x + s * 0.38, y + s * 0.26, x + s * 0.38, y + s * 0.74);
+    doc.line(x + s * 0.62, y + s * 0.26, x + s * 0.62, y + s * 0.74);
+  }
+
+  return size;
 }
 
 /**
@@ -152,20 +197,28 @@ export function createBasePdfReport(options: BaseReportOptions): {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  const factory = (options.factoryName || 'SBKT TEXTILE MILLS').toUpperCase();
+  const factory = (options.factoryName || 'Shree Brahmanikrupa Textile').toUpperCase();
   const tz = options.factoryTimezone || 'Asia/Kolkata';
 
-  // 1. Factory Title
-  doc.setFontSize(16);
+  // 0. Company Logo (rendered directly before company name)
+  const logoX = 14;
+  const logoY = 9.5;
+  const logoSize = 12; // 12mm x 12mm
+  drawCompanyLogo(doc, logoX, logoY, logoSize, options.factoryLogo);
+
+  const textX = logoX + logoSize + 3.5;
+
+  // 1. Factory Title (placed immediately after company logo)
+  doc.setFontSize(15);
   doc.setTextColor(15, 23, 42); // slate-900
   doc.setFont('helvetica', 'bold');
-  doc.text(factory, 14, 15);
+  doc.text(factory, textX, 15);
 
   // 2. Report Subheading
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setTextColor(71, 85, 105); // slate-600
   doc.setFont('helvetica', 'bold');
-  doc.text(options.title.toUpperCase(), 14, 22);
+  doc.text(options.title.toUpperCase(), textX, 21.5);
 
   // 3. Metadata row
   doc.setFontSize(8.5);

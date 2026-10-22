@@ -8,6 +8,7 @@ import beamRouter from '../modules/beam/beam.routes';
 import machineRouter from '../modules/machine/machine.routes';
 import productionRouter from '../modules/production/production.routes';
 import analyticsRouter from '../modules/analytics/analytics.routes';
+import settingsRouter from '../modules/settings/settings.routes';
 
 const apiV1Router = Router();
 
@@ -21,5 +22,6 @@ apiV1Router.use('/beams', beamRouter);
 apiV1Router.use('/machines', machineRouter);
 apiV1Router.use('/production-sheets', productionRouter);
 apiV1Router.use('/analytics', analyticsRouter);
+apiV1Router.use('/settings', settingsRouter);
 
 export default apiV1Router;

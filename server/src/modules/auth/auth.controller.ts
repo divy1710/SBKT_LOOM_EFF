@@ -86,12 +86,14 @@ export const login = async (
 
     let factoryName: string | undefined;
     let factoryTimezone: string | undefined;
-    if (user.factoryId) {
-      const factory = await Factory.findById(user.factoryId).select('name timezone').lean();
-      if (factory) {
-        factoryName = factory.name;
-        factoryTimezone = factory.timezone || 'Asia/Kolkata';
-      }
+    let factoryLogo: string | undefined;
+    let factory = user.factoryId
+      ? await Factory.findById(user.factoryId).select('name timezone logo').lean()
+      : await Factory.findOne().select('name timezone logo').lean();
+    if (factory) {
+      factoryName = factory.name;
+      factoryTimezone = factory.timezone || 'Asia/Kolkata';
+      factoryLogo = factory.logo;
     }
 
     const token = signAccessToken(user._id, user.role, user.factoryId);
@@ -105,6 +107,7 @@ export const login = async (
           user: {
             ...toSafeUser(user),
             ...(factoryName ? { factoryName, factoryTimezone } : {}),
+            ...(factoryLogo ? { factoryLogo } : {}),
           },
         }).toJSON(),
       );
@@ -130,12 +133,14 @@ export const me = async (req: Request, res: Response, next: NextFunction): Promi
     const user = req.user!;
     let factoryName: string | undefined;
     let factoryTimezone: string | undefined;
-    if (user.factoryId) {
-      const factory = await Factory.findById(user.factoryId).select('name timezone').lean();
-      if (factory) {
-        factoryName = factory.name;
-        factoryTimezone = factory.timezone || 'Asia/Kolkata';
-      }
+    let factoryLogo: string | undefined;
+    let factory = user.factoryId
+      ? await Factory.findById(user.factoryId).select('name timezone logo').lean()
+      : await Factory.findOne().select('name timezone logo').lean();
+    if (factory) {
+      factoryName = factory.name;
+      factoryTimezone = factory.timezone || 'Asia/Kolkata';
+      factoryLogo = factory.logo;
     }
 
     res.status(200).json(
@@ -143,6 +148,7 @@ export const me = async (req: Request, res: Response, next: NextFunction): Promi
         user: {
           ...toSafeUser(user),
           ...(factoryName ? { factoryName, factoryTimezone } : {}),
+          ...(factoryLogo ? { factoryLogo } : {}),
         },
       }).toJSON(),
     );

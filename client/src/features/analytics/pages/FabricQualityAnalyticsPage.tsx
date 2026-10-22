@@ -135,6 +135,7 @@ export const FabricQualityAnalyticsPage: React.FC = () => {
         endDate,
         shift,
         factoryName: user?.factoryName,
+        factoryLogo: user?.factoryLogo,
         factoryTimezone: user?.factoryTimezone,
       });
       toast.success('Fabric Quality Analytics PDF report generated successfully');

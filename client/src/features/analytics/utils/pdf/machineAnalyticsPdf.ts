@@ -16,6 +16,7 @@ export interface MachineAnalyticsPdfOptions {
   endDate: string;
   shift: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
 }
 
@@ -26,6 +27,7 @@ export function exportMachineAnalyticsPdf({
   endDate,
   shift,
   factoryName,
+  factoryLogo,
   factoryTimezone,
 }: MachineAnalyticsPdfOptions): void {
   const cfg = data.currentConfig;
@@ -42,6 +44,7 @@ export function exportMachineAnalyticsPdf({
   const { doc, pageWidth, pageHeight, startContentY } = createBasePdfReport({
     title: loomTitle,
     factoryName,
+    factoryLogo,
     factoryTimezone,
     startDate,
     endDate,

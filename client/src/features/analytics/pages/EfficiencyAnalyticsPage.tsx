@@ -188,6 +188,7 @@ export const EfficiencyAnalyticsPage: React.FC = () => {
         endDate,
         shift,
         factoryName: user?.factoryName,
+        factoryLogo: user?.factoryLogo,
         factoryTimezone: user?.factoryTimezone,
       });
       toast.success('Machine Efficiency Analysis PDF report generated successfully');
@@ -214,6 +215,7 @@ export const EfficiencyAnalyticsPage: React.FC = () => {
         endDate,
         shift,
         factoryName: user?.factoryName,
+        factoryLogo: user?.factoryLogo,
         factoryTimezone: user?.factoryTimezone,
       });
       toast.success('Detailed Efficiency Log PDF generated successfully');

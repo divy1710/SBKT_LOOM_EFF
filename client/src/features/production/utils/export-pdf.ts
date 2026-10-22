@@ -6,9 +6,10 @@ import { formatFriendlyDate, getShiftTimingText } from './production-calc';
 interface ExportPdfOptions {
   sheet: ProductionSheet;
   factoryName: string;
+  factoryLogo?: string | null;
 }
 
-export function exportProductionSheetPdf({ sheet, factoryName }: ExportPdfOptions): void {
+export function exportProductionSheetPdf({ sheet, factoryName, factoryLogo }: ExportPdfOptions): void {
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
@@ -17,16 +18,50 @@ export function exportProductionSheetPdf({ sheet, factoryName }: ExportPdfOption
 
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  // Company Logo (placed directly before company name)
+  const logoX = 14;
+  const logoY = 9.5;
+  const logoSize = 12; // 12mm x 12mm
+
+  let drawnImage = false;
+  if (factoryLogo && typeof factoryLogo === 'string' && factoryLogo.startsWith('data:image')) {
+    try {
+      const format =
+        factoryLogo.includes('image/jpeg') || factoryLogo.includes('image/jpg') ? 'JPEG' : 'PNG';
+      doc.addImage(factoryLogo, format, logoX, logoY, logoSize, logoSize);
+      drawnImage = true;
+    } catch {
+      drawnImage = false;
+    }
+  }
+
+  if (!drawnImage) {
+    // High-resolution vector emblem matching SBKT loom weave
+    doc.setFillColor(29, 78, 216); // #1d4ed8
+    doc.roundedRect(logoX, logoY, logoSize, logoSize, 2.5, 2.5, 'F');
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.55);
+
+    const s = logoSize;
+    doc.line(logoX + s * 0.25, logoY + s * 0.38, logoX + s * 0.75, logoY + s * 0.38);
+    doc.line(logoX + s * 0.25, logoY + s * 0.50, logoX + s * 0.75, logoY + s * 0.50);
+    doc.line(logoX + s * 0.25, logoY + s * 0.62, logoX + s * 0.75, logoY + s * 0.62);
+    doc.line(logoX + s * 0.38, logoY + s * 0.26, logoX + s * 0.38, logoY + s * 0.74);
+    doc.line(logoX + s * 0.62, logoY + s * 0.26, logoX + s * 0.62, logoY + s * 0.74);
+  }
+
+  const textX = logoX + logoSize + 3.5;
+
   // Header Title
-  doc.setFontSize(18);
+  doc.setFontSize(16);
   doc.setTextColor(30, 41, 59); // slate-800
   doc.setFont('helvetica', 'bold');
-  doc.text(factoryName.toUpperCase(), 14, 16);
+  doc.text(factoryName.toUpperCase(), textX, 15);
 
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setTextColor(71, 85, 105); // slate-600
   doc.setFont('helvetica', 'normal');
-  doc.text('SHIFT PRODUCTION & EFFICIENCY REPORT', 14, 23);
+  doc.text('SHIFT PRODUCTION & EFFICIENCY REPORT', textX, 21.5);
 
   // Metadata Card / Details
   doc.setFontSize(9);

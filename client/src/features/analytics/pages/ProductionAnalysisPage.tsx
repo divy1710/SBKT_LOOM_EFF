@@ -106,6 +106,7 @@ export const ProductionAnalysisPage: React.FC = () => {
         endDate,
         shift,
         factoryName: user?.factoryName,
+        factoryLogo: user?.factoryLogo,
         factoryTimezone: user?.factoryTimezone,
       });
       toast.success('Production Analysis PDF report generated successfully');

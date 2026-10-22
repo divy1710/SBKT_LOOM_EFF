@@ -19,6 +19,7 @@ export interface FabricQualityPdfOptions {
   endDate: string;
   shift: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
 }
 
@@ -30,11 +31,13 @@ export function exportFabricQualityPdf({
   endDate,
   shift,
   factoryName,
+  factoryLogo,
   factoryTimezone,
 }: FabricQualityPdfOptions): void {
   const { doc, pageWidth, pageHeight, startContentY } = createBasePdfReport({
     title: 'Fabric Quality Production Report',
     factoryName,
+    factoryLogo,
     factoryTimezone,
     startDate,
     endDate,

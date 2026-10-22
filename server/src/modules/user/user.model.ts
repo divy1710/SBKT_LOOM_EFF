@@ -28,6 +28,11 @@ export const USER_MANAGEMENT_ROLES: UserRole[] = [
   UserRole.FACTORY_ADMIN,
 ];
 
+export interface IUserPreferences {
+  theme?: 'light' | 'dark' | 'system';
+  language?: 'en' | 'gu' | 'hi';
+}
+
 // ─── Interface ────────────────────────────────────────────────────────────────
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -36,6 +41,7 @@ export interface IUser extends Document {
   passwordHash: string;
   role: UserRole;
   factoryId?: Types.ObjectId;
+  preferences?: IUserPreferences;
   isActive: boolean;
   lastLoginAt?: Date;
   passwordChangedAt?: Date;
@@ -52,6 +58,8 @@ export interface SafeUser {
   factoryId?: string;
   factoryName?: string;
   factoryTimezone?: string;
+  factoryLogo?: string;
+  preferences?: IUserPreferences;
   isActive: boolean;
   lastLoginAt?: Date;
   createdAt: Date;
@@ -65,6 +73,7 @@ export function toSafeUser(user: IUser): SafeUser {
     email: user.email,
     role: user.role,
     factoryId: user.factoryId?.toString(),
+    preferences: user.preferences,
     isActive: user.isActive,
     lastLoginAt: user.lastLoginAt,
     createdAt: user.createdAt,
@@ -104,6 +113,10 @@ const userSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: 'Factory',
       default: undefined,
+    },
+    preferences: {
+      theme: { type: String, enum: ['light', 'dark', 'system'], default: 'dark' },
+      language: { type: String, enum: ['en', 'gu', 'hi'], default: 'en' },
     },
     isActive: {
       type: Boolean,

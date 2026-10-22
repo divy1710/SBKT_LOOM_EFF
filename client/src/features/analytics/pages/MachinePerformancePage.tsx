@@ -97,6 +97,7 @@ export const MachinePerformancePage: React.FC = () => {
         endDate,
         shift,
         factoryName: user?.factoryName,
+        factoryLogo: user?.factoryLogo,
         factoryTimezone: user?.factoryTimezone,
       });
       toast.success('Machine Performance PDF report generated successfully');

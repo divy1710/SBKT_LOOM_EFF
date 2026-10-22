@@ -24,6 +24,7 @@ export interface EfficiencySummaryPdfOptions {
   endDate: string;
   shift: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
 }
 
@@ -38,6 +39,7 @@ export function exportEfficiencySummaryPdf({
   endDate,
   shift,
   factoryName,
+  factoryLogo,
   factoryTimezone,
 }: EfficiencySummaryPdfOptions): void {
   const extraFilters = [
@@ -49,6 +51,7 @@ export function exportEfficiencySummaryPdf({
   const { doc, pageWidth, pageHeight, startContentY } = createBasePdfReport({
     title: 'Machine Efficiency Analysis Report',
     factoryName,
+    factoryLogo,
     factoryTimezone,
     startDate,
     endDate,
@@ -239,6 +242,7 @@ export interface DetailedEfficiencyPdfOptions {
   endDate: string;
   shift: string;
   factoryName?: string;
+  factoryLogo?: string | null;
   factoryTimezone?: string;
 }
 
@@ -249,6 +253,7 @@ export function exportDetailedEfficiencyPdf({
   endDate,
   shift,
   factoryName,
+  factoryLogo,
   factoryTimezone,
 }: DetailedEfficiencyPdfOptions): void {
   const loomText = machineNumber ? `Machine ${machineNumber}` : 'All Machines';
@@ -261,6 +266,7 @@ export function exportDetailedEfficiencyPdf({
   const { doc, pageWidth, startContentY } = createBasePdfReport({
     title: `Detailed Efficiency Analysis — ${loomText}`,
     factoryName,
+    factoryLogo,
     factoryTimezone,
     startDate,
     endDate,

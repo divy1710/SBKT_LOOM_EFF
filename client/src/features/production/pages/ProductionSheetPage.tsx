@@ -361,7 +361,8 @@ export const ProductionSheetPage: React.FC = () => {
 
     exportProductionSheetPdf({
       sheet: sheetToExport,
-      factoryName: 'SBKT TEXTILE MILLS',
+      factoryName: user?.factoryName || 'Shree Brahmanikrupa Textile',
+      factoryLogo: user?.factoryLogo,
     });
     toast.success('PDF report exported successfully.');
   };
@@ -410,7 +411,7 @@ export const ProductionSheetPage: React.FC = () => {
 
     exportProductionSheetExcel({
       sheet: sheetToExport,
-      factoryName: 'SBKT TEXTILE MILLS',
+      factoryName: user?.factoryName || 'Shree Brahmanikrupa Textile',
     });
     toast.success('Excel spreadsheet exported successfully.');
   };

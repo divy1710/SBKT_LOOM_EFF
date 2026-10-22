@@ -17,6 +17,7 @@ import { MachineAnalyticsPage } from '@/features/analytics/pages/MachineAnalytic
 import { FabricQualityAnalyticsPage } from '@/features/analytics/pages/FabricQualityAnalyticsPage';
 import { MachinePerformancePage } from '@/features/analytics/pages/MachinePerformancePage';
 import { EfficiencyAnalyticsPage } from '@/features/analytics/pages/EfficiencyAnalyticsPage';
+import SettingsPage from '@/features/settings/pages/SettingsPage';
 
 export const router = createBrowserRouter([
   // ── Public ────────────────────────────────────────────────────────────────
@@ -122,6 +123,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <EfficiencyAnalyticsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <ProtectedRoute>
+        <SettingsPage />
       </ProtectedRoute>
     ),
   },
