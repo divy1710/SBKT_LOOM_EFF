@@ -27,8 +27,13 @@ export const authenticate = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const token: string | undefined =
+    const cookieToken: string | undefined =
       (req.cookies as Record<string, string | undefined>)[COOKIE_NAME];
+    const authHeader = req.headers.authorization;
+    const headerToken = authHeader?.startsWith('Bearer ')
+      ? authHeader.slice(7).trim()
+      : undefined;
+    const token = cookieToken || headerToken;
 
     if (!token) {
       return next(new ApiError(401, 'Authentication required'));

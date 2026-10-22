@@ -21,7 +21,7 @@ const BCRYPT_ROUNDS = 12;
 const cookieOptions = () => ({
   httpOnly: true,
   secure: isProduction,
-  sameSite: (isProduction ? 'strict' : 'lax') as 'strict' | 'lax',
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: getTokenMaxAgeMs(),
   path: '/',
 });
@@ -101,6 +101,7 @@ export const login = async (
       .status(200)
       .json(
         new ApiResponse('Login successful', {
+          token,
           user: {
             ...toSafeUser(user),
             ...(factoryName ? { factoryName, factoryTimezone } : {}),
@@ -114,7 +115,12 @@ export const login = async (
 
 // ─── POST /api/v1/auth/logout ─────────────────────────────────────────────────
 export const logout = (_req: Request, res: Response): void => {
-  res.clearCookie(COOKIE_NAME, { httpOnly: true, path: '/' });
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    path: '/',
+    secure: isProduction,
+    sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+  });
   res.status(200).json(new ApiResponse('Logged out successfully').toJSON());
 };
 
